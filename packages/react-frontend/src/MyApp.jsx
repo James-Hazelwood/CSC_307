@@ -24,21 +24,68 @@ function MyApp() {
     );
 
 
-    function removeOneCharacter(index) {
-        const updated = characters.filter((character, i) => {
-            return i !== index;
+    function removeOneCharacter(person) {
+      deleteUser(person)
+      .then((response) => {
+        if (response.status === 204) {
+          setCharacters(prev => prev.filter(p => p !== person));
+        } else {
+          console.log("204 not received");
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+    }
+
+    function deleteUser(person) {
+        const promise = fetch("Http://localhost:8000/users", {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(person),
         });
-        setCharacters(updated);
+    
+        return promise;
     }
 
     function updateList(person) {
-        setCharacters([...characters, person]);
+      postUser(person)
+        .then((response) => {
+          if (response.status === 201) {
+            return response.json(); 
+          } else {
+            console.log("201 not received, actual status:", response.status);
+            return null; 
+          }
+        })
+        .then((data) => {
+          if (data) {
+            setCharacters(prev => [...prev, data]);
+          }
+        })
+        .catch((error) => {
+          console.log("Fetch error:", error);
+        });
     }
-
+    
     function fetchUsers() {
         const promise = fetch("http://localhost:8000/users");
         return promise;
     }
+
+    function postUser(person) {
+        const promise = fetch("Http://localhost:8000/users", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(person),
+        });
+    
+        return promise;
+      }
 
 }
 
